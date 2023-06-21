@@ -14,7 +14,7 @@ import com.example.Books.Publishers.dtos.PublisherDto;
 import com.example.Books.Publishers.dtos.PublisherResponseDto;
 import com.example.Books.Publishers.entity.Book;
 import com.example.Books.Publishers.entity.Publisher;
-import com.example.Books.Publishers.repository.BooksRepository;
+import com.example.Books.Publishers.repository.BookRepository;
 import com.example.Books.Publishers.repository.PublishersRepository;
 
 @Service
@@ -27,7 +27,7 @@ public class PublisherServiceImpl implements PublishersService{
 	private KafkaService kafkaService;
 	
 	@Autowired
-	private BooksRepository booksRepository;
+	private BookRepository booksRepository;
 	
 	
 	@Override

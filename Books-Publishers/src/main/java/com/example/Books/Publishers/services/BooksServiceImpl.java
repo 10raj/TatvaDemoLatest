@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 import org.apache.kafka.common.KafkaException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.Books.Publishers.configurations.kafka.KafkaPublisher;
@@ -14,7 +17,7 @@ import com.example.Books.Publishers.dtos.BookRequestDto;
 import com.example.Books.Publishers.dtos.BookResponseDto;
 import com.example.Books.Publishers.entity.Book;
 import com.example.Books.Publishers.entity.Publisher;
-import com.example.Books.Publishers.repository.BooksRepository;
+import com.example.Books.Publishers.repository.BookRepository;
 import com.example.Books.Publishers.repository.PublishersRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class BooksServiceImpl implements BooksService{
-
+	
 	@Autowired
-	private BooksRepository booksRepository;
+	private BookRepository booksRepository;
 	
 	@Autowired
 	private PublishersRepository publishersRepository;
@@ -39,6 +42,7 @@ public class BooksServiceImpl implements BooksService{
 	}
 
 	@Override
+	@Cacheable(value = "books", key = "#id")
 	public BookResponseDto getBookById(Long id) {
 		Book book = booksRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Given Book "+id+" doesn't exist"));
@@ -47,6 +51,7 @@ public class BooksServiceImpl implements BooksService{
 
 	@Override
 	public BookResponseDto save(BookRequestDto bookRequestDto) {
+		
 		String kafkaMessage = "";
 		Book book = new Book();
 		if (bookRequestDto.getId() == null || bookRequestDto.getId() == 0) {
@@ -71,6 +76,7 @@ public class BooksServiceImpl implements BooksService{
 
 		}
 		book = booksRepository.save(book);
+		
 		kafkaService.sendMessageToKafka(kafkaMessage);
 		return convertToDto(book);
 	}
@@ -78,6 +84,7 @@ public class BooksServiceImpl implements BooksService{
 	
 	
 	@Override
+	@CacheEvict(value = "books", key = "#id")
 	public void deleteBookById(Long id) {
 		String kafkaMessage="";
 		Book bookDb=booksRepository.findById(id)
