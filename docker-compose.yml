@@ -34,7 +34,16 @@
         expose:
             - '9092'
         networks:
-          - lm_network   
+          - lm_network
+
+
+      cache:
+        image: redis:6.2-alpine
+        restart: always
+        ports:
+          - '6379:6379'
+        networks:
+          - lm_network    
        
       db:
         image: mysql:5.7
@@ -101,6 +110,9 @@
           - spring.datasource.password=password
           - eureka.client.serviceUrl.defaultZone=http://eureka-service:8761/eureka
           - spring.kafka.bootstrap-servers=kafka:9092
+          - spring.redis.port=6379
+          - spring.redis.host=cache
+
             
         ports:
           - '9550:9550'
